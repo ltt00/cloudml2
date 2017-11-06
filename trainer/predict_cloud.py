@@ -3,9 +3,8 @@ import numpy as np
 import os
 import time
 import datetime
-from cloud_cnnbag.trainer import input_generator as i_gen
-from cloud_cnnbag.trainer import simple_cnnbag_cloud as cnn
-from cloud_cnnbag.trainer.train_cnnbag_local import Model_Trainer
+import input_generator as i_gen
+import train_cnnbag_local as t
 import argparse
 #tf.contrib.data.Dataset
 
@@ -13,7 +12,7 @@ import argparse
 
 def predict(checkpoint_file, input, outdir, word_embd, other_embd):
     #checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
-    trainer = Model_Trainer()
+    trainer = t.Model_Trainer()
     num_ex = trainer.get_num_examples([input])[0]
     num_batch = 64
     max_steps = int(np.ceil(num_ex/num_batch))

@@ -85,7 +85,7 @@ def main():
 if __name__ =="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint',
-    default='gs://zodophd/models/conv_bag_large/cnnmodel.ckpt-3262')
+    default='gs://zodophd/models/cnnbag_large_1/cnnmodel.ckpt-3262')
     parser.add_argument('--input', default='gs://zodophd/data/test_conv_bag/tfrecords.tfrecords')
     parser.add_argument('--outdir', default='eval')
     parser.add_argument('--word_embd', default='gs://zodophd/embd')

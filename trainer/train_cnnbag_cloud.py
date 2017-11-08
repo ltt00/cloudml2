@@ -6,8 +6,10 @@ import os
 #logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
 import numpy as np
-from trainer import input_generator as i_gen
-from trainer import simple_cnnbag_cloud as scnn
+#from trainer import input_generator as i_gen
+import input_generator as i_gen
+import simple_cnnbag_cloud as scnn
+#from trainer import simple_cnnbag_cloud as scnn
 from sklearn import metrics as skmetrics
 import matplotlib
 import logging

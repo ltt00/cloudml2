@@ -58,7 +58,7 @@ def create_input(weights, path, batch_size, shuffle_num):
     iterator = dataset.make_initializable_iterator()
     #input_tensors, length_tensors, section_tensors, classes =  iterator.get_next()
     tokens, labels, distances, length_tensors, section_tensors, classes, name = iterator.get_next()
-    with tf.device('/gpu:0'):
+    with tf.device('/cpu:0'):
         tokens = tf.nn.embedding_lookup(weights[0], tokens)
         labels = tf.nn.embedding_lookup(weights[1], labels)
         distances = tf.nn.embedding_lookup(weights[2], distances)

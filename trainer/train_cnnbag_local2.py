@@ -6,8 +6,8 @@ import os
 #logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
 import numpy as np
-from trainer import input_generator as i_gen
-from trainer import simple_cnnbag_cloud as scnn
+from  cloud_cnnbag.trainer import input_generator as i_gen
+from cloud_cnnbag.trainer import simple_cnnbag_cloud as scnn
 from sklearn import metrics as skmetrics
 import matplotlib
 import logging
@@ -39,8 +39,8 @@ class Model_Trainer:
         self.config=dict()
         self.config['trainpath'] = arguments.trainpath
         self.config['evalpath'] = arguments.evalpath
-        #self.config['jobdir'] = self.get_outdir(arguments.job_dir)
-        self.config['jobdir'] = arguments.job_dir
+        self.config['jobdir'] = self.get_outdir(arguments.job_dir)
+        #self.config['jobdir'] = arguments.job_dir
         self.config['word_embd_dir'] = arguments.embdworddir
         self.config['pos_label_embd_dir'] = arguments.embdposlabeldir
         self.config['embd_size'] = arguments.embdsize
@@ -58,7 +58,7 @@ class Model_Trainer:
         self.config['max_window'] = arguments.maxwin
         self.config['summary_step'] = arguments.summaryfreq
         self.config['checkpoint_step'] = arguments.checkpointfreq
-        self.config['log_step'] = 10
+        self.config['log_step'] = 5
 
 
     def dev_step(self, mtest, iterator, num_valid_batch, valid_features, valid_labels, global_step, sess):
@@ -161,7 +161,7 @@ class Model_Trainer:
         plt.savefig(savepath, dpi=fig.dpi)
 
     def get_embeddings(self):
-        with tf.device('/gpu:0'):
+        with tf.device('/cpu:0'):
             embedding_weights = tf.get_variable('embedding_weights', (71608, 500), trainable=False,
                                                 initializer=tf.zeros_initializer)
             random_label = tf.get_variable('random_label', (9, 100), trainable=False, initializer=tf.zeros_initializer)
@@ -245,7 +245,7 @@ class Model_Trainer:
                                 print("\n===== write summary =====")
                                 self.write_summaries(train_summary_writer, summary_str, global_step,
                                                      loss_value, auc_tf, f1, tprecision, trecall)
-                                if global_step % (10*self.config['summary_step']) == 0 or global_step == self.max_train_steps:
+                                if global_step % (1*self.config['summary_step']) == 0 or global_step == self.max_train_steps:
                                     dev_loss, dev_auc, dev_f1, dev_recall, dev_pre, dev_aps, dev_roc_auc = self.dev_step(m, valid_iterator, self.num_valid_batch,
                                                                             valid_features, valid_labels, global_step,sess)
                                     self.write_summaries(dev_summary_writer, summary_str, global_step, dev_loss,
@@ -326,27 +326,29 @@ def main():
     model_trainer = Model_Trainer()
     parser = argparse.ArgumentParser()
     parser.add_argument('--trainpath',
-                        required=True,
+                        default='C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/model_type_1/tfrecords/sample/conv_bag_filtered/train3_conv_bag.tfrecords',
                         type=str,
                         help='Training files GCS')
     parser.add_argument('--evalpath',
-                        required=True,
+                        default='C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/model_type_1/tfrecords/sample/conv_bag_filtered/valid3_conv_bag.tfrecords',
                         type=str,
                         help='Evaluation files GCS')
     parser.add_argument('--job-dir',
-                        required=True,
+                        default='C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/phd/cloud_cnnbag/trainer/outputs_f',
                         type=str,
                         help="""\
-                         GCS or local dir for checkpoints, exports, and
-                         summaries. Use an existing directory to load a
-                         trained model, or a new directory to retrain""")
+                          GCS or local dir for checkpoints, exports, and
+                          summaries. Use an existing directory to load a
+                          trained model, or a new directory to retrain""")
     parser.add_argument('--embdworddir',
                         type=str,
-                        default='gs://zodophd/embd', #'C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/embd_all2/', #'gs://zodophd/embd',
+                        default='C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/embd_all2/',
+                        # 'gs://zodophd/embd',
                         help='Word embedding directory')
     parser.add_argument('--embdposlabeldir',
                         type=str,
-                        default='gs://zodophd/embd_pos_label', #'C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/embd_pos_label/', #'gs://zodophd/embd_pos_label',
+                        default='C:/Users/ttasn/Documents/ASU/Research/PhD/deeplearning/dataset_creation/data/embd_pos_label/',
+                        # 'gs://zodophd/embd_pos_label',
                         help='Position and label embedding directory')
     parser.add_argument('--embdsize',
                         type=int,
@@ -358,19 +360,19 @@ def main():
                         help='Number of classes')
     parser.add_argument('--trainbatchsize',
                         type=int,
-                        default=50,
+                        default=10,
                         help='Batch size for training steps')
     parser.add_argument('--evalbatchsize',
                         type=int,
-                        default=100,
+                        default=10,
                         help='Batch size for evaluation steps')
     parser.add_argument('--numshuffle',
                         type=int,
-                        default=1000,
+                        default=1,
                         help='Batch size for evaluation steps')
     parser.add_argument('--numepochs',
                         type=int,
-                        default=2,
+                        default=1,
                         help='Maximum number of epochs on which to train')
     parser.add_argument('--optimizer',
                         choices=[
@@ -411,9 +413,8 @@ def main():
                         help='Write summary and evaluate model per n steps')
     parser.add_argument('--checkpointfreq',
                         type=int,
-                        default=500,
+                        default=1000,
                         help='Save model per n steps')
-
 
     parser.add_argument('--verbosity',
                         choices=[
@@ -438,7 +439,6 @@ def main():
 
     model_trainer.set_config(parse_args)
     model_trainer.train()
-
 
 if __name__ == "__main__":
     main()

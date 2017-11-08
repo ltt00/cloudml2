@@ -13,6 +13,8 @@ import argparse
 
 def predict(checkpoint_file, input, outdir, word_embd, other_embd):
     #checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
+
+    all_predictions = []
     trainer = Model_Trainer()
     num_ex = trainer.get_num_examples([input])[0]
     num_batch = 64
@@ -52,25 +54,25 @@ def predict(checkpoint_file, input, outdir, word_embd, other_embd):
             batch_size = graph.get_operation_by_name('cnn/Placeholder_1').outputs[0]
             prediction_1 = graph.get_operation_by_name('cnn/output/predicted_score_class1').outputs[0]
             prediction_class = graph.get_operation_by_name('cnn/output/predicted_class').outputs[0]
-            all_predictions = []
             while True:
+            #for i in range(20):
                 try:
                     print('Step %d of %d'%(count, max_steps))
-                    input_vals, label_vals, names = sess1.run([features['input'], labels, names])
+                    input_vals, label_vals, names_vals = sess1.run([features['input'], labels, names])
                     feed_dict = {input: input_vals,
                                  label: label_vals,
                                  batch_size: num_batch,
                                  dropout_keep: 1.0}
                     predictions, curlabels = sess.run([prediction_1,prediction_class], feed_dict)
-                    all_predictions.extend(zip(names, predictions, curlabels))
+                    all_predictions.extend(zip(names_vals, predictions, curlabels))
                     count+=1
                 except tf.errors.OutOfRangeError:
                     break
 
-            pred_strs = ['\t'.join([p[0], p[1], p[2]]) for p in all_predictions]
-            out_str = '\n'.join(pred_strs)
-            with open(os.path.join(outdir, 'results.txt')) as f:
-                f.write(out_str)
+    pred_strs = ['\t'.join([str(p[0]), str(p[1][0]), str(p[2])]) for p in all_predictions]
+    out_str = '\n'.join(pred_strs)
+    with open(os.path.join(outdir, 'results.txt'), 'w') as f:
+        f.write(out_str)
     sess1.close()
 
 

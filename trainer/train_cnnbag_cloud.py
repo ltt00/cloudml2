@@ -360,7 +360,7 @@ def main():
                         help='Number of classes')
     parser.add_argument('--trainbatchsize',
                         type=int,
-                        default=50,
+                        default=60,
                         help='Batch size for training steps')
     parser.add_argument('--evalbatchsize',
                         type=int,
